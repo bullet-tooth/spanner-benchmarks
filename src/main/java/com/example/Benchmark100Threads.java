@@ -50,6 +50,7 @@ public class Benchmark100Threads {
     private static final String SQL_PREFETCH_PART1 =
             "SELECT mp FROM cao_ldm_00_acc WHERE pk=@pk AND valid_from<=@valid_from ORDER BY valid_from DESC";
 
+    @Benchmark()
     public void emptyRW(SpannerConnection connection) {
         DatabaseClient client = connection.getClient();
         connection.getClient().readWriteTransaction()
