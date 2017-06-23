@@ -53,7 +53,7 @@ public class Benchmark100Threads {
     @Benchmark()
     public void emptyRW(SpannerConnection connection) {
         DatabaseClient client = connection.getClient();
-        connection.getClient().readWriteTransaction()
+        client.readWriteTransaction()
                 .run(new TransactionRunner.TransactionCallable<Void>() {
                     @Nullable
                     @Override
@@ -102,7 +102,7 @@ public class Benchmark100Threads {
         resultSet.close();
 
 
-        connection.getClient().readWriteTransaction()
+        client.readWriteTransaction()
                 .run(new TransactionRunner.TransactionCallable<Void>() {
                     @Nullable
                     @Override
