@@ -49,5 +49,6 @@ public class SpannerConnection {
     @TearDown
     public void closeConnection() throws ExecutionException, InterruptedException {
         spanner.closeAsync().get();
+        System.out.println("Connection closed");
     }
 }
