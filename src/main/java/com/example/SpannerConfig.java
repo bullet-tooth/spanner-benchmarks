@@ -57,4 +57,8 @@ public class SpannerConfig {
     public float writeSessionFraction() {
         return Float.parseFloat(System.getProperty("spanner.sessions.write.fraction"));
     }
+
+    public int clientThreadsNum() {
+      return Integer.parseInt(System.getProperty("spanner.clientthreads.num", "100"));
+    }
 }
