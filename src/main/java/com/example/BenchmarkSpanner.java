@@ -42,8 +42,8 @@ import java.util.concurrent.TimeUnit;
 
 @Fork(1)
 @Warmup(iterations = 5, time = 1)
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@BenchmarkMode({Mode.Throughput})
+@OutputTimeUnit(TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 5)
 
 public class BenchmarkSpanner {
