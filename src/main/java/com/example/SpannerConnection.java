@@ -7,7 +7,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-import java.util.concurrent.ExecutionException;
+
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -20,7 +20,7 @@ public class SpannerConnection {
     private static class SpannerExecutorFactory implements
       GrpcTransportOptions.ExecutorFactory<ScheduledExecutorService> {
       ScheduledThreadPoolExecutor service;
-      
+
       SpannerExecutorFactory(int numThreads) {
         service = new ScheduledThreadPoolExecutor(numThreads);
       }
@@ -29,8 +29,8 @@ public class SpannerConnection {
       public ScheduledExecutorService get() {
         return service;
       }
-      
-      @Override 
+
+      @Override
       public void release(ScheduledExecutorService service) {
         service.shutdown();
       }
