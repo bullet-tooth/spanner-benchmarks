@@ -83,10 +83,9 @@ public class SpannerConnection {
     public void closeConnection() {
         try {
             spanner.close();
+            System.out.println("Spanner connection closed");
         } catch (IllegalStateException e) {
 
-        } finally {
-            System.out.println("Spanner connection closed");
         }
     }
 }
