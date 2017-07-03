@@ -64,6 +64,13 @@ public class SpannerConnection {
             System.exit(1);
         }
         dbClient = spanner.getDatabaseClient(db);
+
+        Runtime.getRuntime().addShutdownHook(new Thread("spannerShutdown") {
+            @Override
+            public void run() {
+                closeConnection();
+            }
+        });
     }
 
 
@@ -75,5 +82,6 @@ public class SpannerConnection {
     @TearDown
     public void closeConnection() {
         spanner.close();
+        System.out.println("Spanner connection closed");
     }
 }
