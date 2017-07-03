@@ -37,6 +37,7 @@ import org.openjdk.jmh.annotations.*;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,6 +50,8 @@ import java.util.concurrent.TimeUnit;
 public class BenchmarkSpanner {
     private static final String SQL_PREFETCH_PART1 =
             "SELECT mp FROM cao_ldm_00_acc WHERE pk=@pk AND valid_from<=@valid_from ORDER BY valid_from DESC";
+    private static final long RECORDS = 100000000L;
+    public static final long PREFIX = 491733000000L;
 
     @Benchmark()
     public void emptyRW(SpannerConnection connection) {
@@ -67,12 +70,11 @@ public class BenchmarkSpanner {
     @Benchmark()
     public void prefetch(SpannerConnection connection) {
         DatabaseClient client = connection.getClient();
-        long records = 100000000;
-        long lCustomerId = 491733000000L + (long) (records * Math.random());
+        long customerId = getRandomCustomer();
 
         // --- Prefetch ---
         Statement statement = Statement.newBuilder(SQL_PREFETCH_PART1)
-                .bind("pk").to("169 " + lCustomerId + " 0 ")
+                .bind("pk").to("169 " + customerId + " 0 ")
                 .bind("valid_from").to(System.currentTimeMillis())
                 .build();
 
@@ -86,13 +88,11 @@ public class BenchmarkSpanner {
     @Benchmark()
     public void callSetup(SpannerConnection connection) {
         DatabaseClient client = connection.getClient();
-        long records = 100000000;
-
-        long lCustomerId = 491733000000L + (long) (records * Math.random());
+        long customerId = getRandomCustomer();
 
         // --- Prefetch ---
         Statement statement = Statement.newBuilder(SQL_PREFETCH_PART1)
-                .bind("pk").to("169 " + lCustomerId + " 0 ")
+                .bind("pk").to("169 " + customerId + " 0 ")
                 .bind("valid_from").to(System.currentTimeMillis())
                 .build();
 
@@ -140,5 +140,24 @@ public class BenchmarkSpanner {
                         return null;
                     }
                 });
+    }
+
+
+    @Benchmark
+    public void blindWrite(SpannerConnection connection) {
+        long customerId = getRandomCustomer();
+        String mp = "30 " + customerId + " ";
+
+        Mutation mutation = Mutation.newUpdateBuilder("cao_ldm_00_ent")
+                .set("mp").to(mp)
+                .set("cc").to(0)
+                .build();
+
+        connection.getClient().write(Collections.singletonList(mutation));
+    }
+
+
+    private long getRandomCustomer() {
+        return PREFIX + (long) (RECORDS * Math.random());
     }
 }

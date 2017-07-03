@@ -47,15 +47,15 @@ public class SpannerConfig {
     }
 
     public int minSessions() {
-        return Integer.parseInt(System.getProperty("spanner.sessions.min"));
+        return Integer.parseInt(System.getProperty("spanner.sessions.min", "100"));
     }
 
     public int channelsNum() {
-        return Integer.parseInt(System.getProperty("spanner.channels.num"));
+        return Integer.parseInt(System.getProperty("spanner.channels.num", "16"));
     }
 
     public float writeSessionFraction() {
-        return Float.parseFloat(System.getProperty("spanner.sessions.write.fraction"));
+        return Float.parseFloat(System.getProperty("spanner.sessions.write.fraction", "0f"));
     }
 
     public int clientThreadsNum() {
