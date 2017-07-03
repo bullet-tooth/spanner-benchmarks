@@ -81,7 +81,12 @@ public class SpannerConnection {
 
     @TearDown
     public void closeConnection() {
-        spanner.close();
-        System.out.println("Spanner connection closed");
+        try {
+            spanner.close();
+        } catch (IllegalStateException e) {
+
+        } finally {
+            System.out.println("Spanner connection closed");
+        }
     }
 }
