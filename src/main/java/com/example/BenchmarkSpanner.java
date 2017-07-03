@@ -42,11 +42,11 @@ import java.util.concurrent.TimeUnit;
 
 @Fork(1)
 @Warmup(iterations = 5, time = 1)
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@BenchmarkMode({Mode.Throughput})
+@OutputTimeUnit(TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 5)
-@Threads(1000)
-public class Benchmark1000Threads {
+
+public class BenchmarkSpanner {
     private static final String SQL_PREFETCH_PART1 =
             "SELECT mp FROM cao_ldm_00_acc WHERE pk=@pk AND valid_from<=@valid_from ORDER BY valid_from DESC";
 
