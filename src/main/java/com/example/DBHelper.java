@@ -22,8 +22,7 @@ public class DBHelper {
     }
 
     public static Mutation getRandomMutation() {
-        long customerId = getRandomCustomer();
-        String mp = "30 " + customerId + " ";
+        String mp = getRandomMp();
         SubscriberData sd = new SubscriberData(ThreadLocalRandom.current().nextLong(RECORDS));
         return getMutation(sd, mp);
     }

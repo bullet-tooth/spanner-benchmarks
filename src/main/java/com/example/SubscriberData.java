@@ -46,6 +46,10 @@ public class SubscriberData {
         return PREFIX + ThreadLocalRandom.current().nextLong(RECORDS);
     }
 
+    public static String getRandomMp() {
+         return "30 " + getRandomCustomer() + " ";
+    }
+
     private static ByteArray getBytes(Struct row, String column) {
         return row.isNull(column) ? null : row.getBytes(column);
     }

@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 
 import static com.example.DBHelper.*;
+import static com.example.SubscriberData.getRandomMp;
 
 @Fork(1)
 @Warmup(iterations = 5, time = 1)
@@ -99,6 +100,7 @@ public class BenchmarkSpanner {
         connection.getClient().write(ImmutableList.of(getRandomMutation()));
     }
 
+
     @Benchmark
     public void rwtUpdate(SpannerConnection connection) {
         connection.getClient().readWriteTransaction()
@@ -110,6 +112,25 @@ public class BenchmarkSpanner {
                         return null;
                     }
                 });
+    }
+
+    @Benchmark
+    public void rwTransaction(SpannerConnection connection) {
+        final String mp = getRandomMp();
+        connection.getClient().readWriteTransaction()
+                .run(new TransactionRunner.TransactionCallable<Void>() {
+                    @Nullable
+                    @Override
+                    public Void run(TransactionContext transaction) throws Exception {
+                        Struct row = readRow(transaction, mp);
+                        Thread.sleep(TIME_TO_SLEEP);
+                        if (row != null) {
+                            transaction.buffer(getMutation(SubscriberData.from(row), mp));
+                        }
+                        return null;
+                    }
+                });
+
     }
 
 }
