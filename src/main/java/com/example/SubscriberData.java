@@ -21,7 +21,7 @@ public class SubscriberData {
     private final Long cc;
     private final Map<String, ByteArray> data = new HashMap<>();
 
-    SubscriberData(Long cc) {
+    private SubscriberData(Long cc) {
         this.cc = cc;
     }
 
@@ -52,5 +52,15 @@ public class SubscriberData {
 
     private static ByteArray getBytes(Struct row, String column) {
         return row.isNull(column) ? null : row.getBytes(column);
+    }
+
+
+    public static SubscriberData generateRandomCustomerData() {
+        SubscriberData sd = new SubscriberData(ThreadLocalRandom.current().nextLong(RECORDS));
+        byte[] randomBytes = new byte[2000];
+        ThreadLocalRandom.current().nextBytes(randomBytes);
+        sd.data.put(COLUMNS_CONTAINERS.get(0), ByteArray.copyFrom(randomBytes));
+
+        return sd;
     }
 }

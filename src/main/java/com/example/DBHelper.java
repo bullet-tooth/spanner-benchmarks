@@ -5,7 +5,6 @@ import com.google.cloud.spanner.*;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static com.example.SubscriberData.*;
 
@@ -22,9 +21,8 @@ public class DBHelper {
     }
 
     public static Mutation getRandomMutation() {
-        String mp = getRandomMp();
-        SubscriberData sd = new SubscriberData(ThreadLocalRandom.current().nextLong(RECORDS));
-        return getMutation(sd, mp);
+
+        return getMutation(generateRandomCustomerData(), getRandomMp());
     }
 
     public static String execPrefetch(DatabaseClient client) {

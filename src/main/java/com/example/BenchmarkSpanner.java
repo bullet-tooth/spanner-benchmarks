@@ -69,66 +69,87 @@ public class BenchmarkSpanner {
 
     @Benchmark
     public void prefetch(SpannerConnection connection) {
-        DatabaseClient client = connection.getClient();
-        execPrefetch(client);
+        try {
+            DatabaseClient client = connection.getClient();
+            execPrefetch(client);
+        } catch (RuntimeException e) {
+            System.err.println(Thread.currentThread().getName() + " Exception occurred " + e.getMessage());
+        }
     }
 
 
     @Benchmark
     public void callSetup(SpannerConnection connection) {
-        DatabaseClient client = connection.getClient();
-        final String mp = execPrefetch(client);
+        try {
+            DatabaseClient client = connection.getClient();
+            final String mp = execPrefetch(client);
 
-        client.readWriteTransaction()
-                .run(new TransactionRunner.TransactionCallable<Void>() {
-                    @Nullable
-                    @Override
-                    public Void run(TransactionContext transaction) throws Exception {
-                        Struct row = readRow(transaction, mp);
-                        Thread.sleep(TIME_TO_SLEEP);
-                        if (row != null) {
-                            transaction.buffer(getMutation(SubscriberData.from(row), mp));
+            client.readWriteTransaction()
+                    .run(new TransactionRunner.TransactionCallable<Void>() {
+                        @Nullable
+                        @Override
+                        public Void run(TransactionContext transaction) throws Exception {
+                            Struct row = readRow(transaction, mp);
+                            Thread.sleep(TIME_TO_SLEEP);
+                            if (row != null) {
+                                transaction.buffer(getMutation(SubscriberData.from(row), mp));
+                            }
+                            return null;
                         }
-                        return null;
-                    }
-                });
+                    });
+        } catch (RuntimeException e) {
+            System.err.println(Thread.currentThread().getName() + " Exception occurred " + e.getMessage());
+        }
     }
 
 
     @Benchmark
     public void blindUpdate(SpannerConnection connection) {
-        connection.getClient().write(ImmutableList.of(getRandomMutation()));
+        try {
+            connection.getClient().write(ImmutableList.of(getRandomMutation()));
+        } catch (RuntimeException e) {
+            System.err.println(Thread.currentThread().getName() + " Exception occurred " + e.getMessage());
+        }
     }
 
 
     @Benchmark
     public void rwtUpdate(SpannerConnection connection) {
-        connection.getClient().readWriteTransaction()
-                .run(new TransactionRunner.TransactionCallable<Void>() {
-                    @Nullable
-                    @Override
-                    public Void run(TransactionContext transaction) throws Exception {
-                        transaction.buffer(getRandomMutation());
-                        return null;
-                    }
-                });
+        try {
+            connection.getClient().readWriteTransaction()
+                    .run(new TransactionRunner.TransactionCallable<Void>() {
+                        @Nullable
+                        @Override
+                        public Void run(TransactionContext transaction) throws Exception {
+                            transaction.buffer(getRandomMutation());
+                            return null;
+                        }
+                    });
+        } catch (RuntimeException e) {
+            System.err.println(Thread.currentThread().getName() + " Exception occurred " + e.getMessage());
+        }
+
     }
 
     @Benchmark
     public void rwTransaction(SpannerConnection connection) {
-        final String mp = getRandomMp();
-        connection.getClient().readWriteTransaction()
-                .run(new TransactionRunner.TransactionCallable<Void>() {
-                    @Nullable
-                    @Override
-                    public Void run(TransactionContext transaction) throws Exception {
-                        Struct row = readRow(transaction, mp);
-                        if (row != null) {
-                            transaction.buffer(getMutation(SubscriberData.from(row), mp));
+        try {
+            final String mp = getRandomMp();
+            connection.getClient().readWriteTransaction()
+                    .run(new TransactionRunner.TransactionCallable<Void>() {
+                        @Nullable
+                        @Override
+                        public Void run(TransactionContext transaction) throws Exception {
+                            Struct row = readRow(transaction, mp);
+                            if (row != null) {
+                                transaction.buffer(getMutation(SubscriberData.from(row), mp));
+                            }
+                            return null;
                         }
-                        return null;
-                    }
-                });
+                    });
+        } catch (RuntimeException e) {
+            System.err.println(Thread.currentThread().getName() + " Exception occurred " + e.getMessage());
+        }
 
     }
 
