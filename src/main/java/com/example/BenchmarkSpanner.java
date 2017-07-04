@@ -41,7 +41,7 @@ import org.openjdk.jmh.annotations.*;
 import javax.annotation.Nullable;
 import java.util.concurrent.TimeUnit;
 
-import static com.example.SubscriberData.*;
+import static com.example.DBHelper.*;
 
 @Fork(1)
 @Warmup(iterations = 5, time = 1)
