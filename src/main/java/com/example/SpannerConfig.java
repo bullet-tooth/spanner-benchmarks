@@ -1,16 +1,13 @@
 package com.example;
 
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.State;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 public class SpannerConfig {
-
-    private static SpannerConfig instance;
-
+    private static class Holder {
+        static final SpannerConfig instance = new SpannerConfig();
+    }
     private Properties properties;
 
     private SpannerConfig() {
@@ -19,14 +16,7 @@ public class SpannerConfig {
     }
 
     public static SpannerConfig getConfig() {
-        if (instance == null) {
-            synchronized (SpannerConfig.class) {
-                if (instance == null) {
-                    instance = new SpannerConfig();
-                }
-            }
-        }
-        return instance;
+        return Holder.instance;
     }
 
     private void load() {
@@ -59,6 +49,6 @@ public class SpannerConfig {
     }
 
     public int clientThreadsNum() {
-      return Integer.parseInt(System.getProperty("spanner.clientthreads.num", "100"));
+        return Integer.parseInt(System.getProperty("spanner.clientthreads.num", "100"));
     }
 }

@@ -31,15 +31,17 @@
 
 package com.example;
 
-import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionRunner;
+import com.google.common.collect.ImmutableList;
 import org.openjdk.jmh.annotations.*;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
+import static com.example.SubscriberData.*;
 
 @Fork(1)
 @Warmup(iterations = 5, time = 1)
@@ -48,12 +50,9 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 10, time = 5)
 
 public class BenchmarkSpanner {
-    private static final String SQL_PREFETCH_PART1 =
-            "SELECT mp FROM cao_ldm_00_acc WHERE pk=@pk AND valid_from<=@valid_from ORDER BY valid_from DESC";
-    private static final long RECORDS = 100000000L;
-    public static final long PREFIX = 491733000000L;
+    private static final long TIME_TO_SLEEP = 20L;
 
-    @Benchmark()
+    @Benchmark
     public void emptyRW(SpannerConnection connection) {
         DatabaseClient client = connection.getClient();
         client.readWriteTransaction()
@@ -67,75 +66,27 @@ public class BenchmarkSpanner {
     }
 
 
-    @Benchmark()
+    @Benchmark
     public void prefetch(SpannerConnection connection) {
         DatabaseClient client = connection.getClient();
-        long customerId = getRandomCustomer();
-
-        // --- Prefetch ---
-        Statement statement = Statement.newBuilder(SQL_PREFETCH_PART1)
-                .bind("pk").to("169 " + customerId + " 0 ")
-                .bind("valid_from").to(System.currentTimeMillis())
-                .build();
-
-        ResultSet resultSet = client.singleUse()
-                .executeQuery(statement);
-        final String mp = resultSet.next() ? resultSet.getString("mp") : null;
-        resultSet.close();
+        execPrefetch(client);
     }
 
 
-    @Benchmark()
+    @Benchmark
     public void callSetup(SpannerConnection connection) {
         DatabaseClient client = connection.getClient();
-        long customerId = getRandomCustomer();
-
-        // --- Prefetch ---
-        Statement statement = Statement.newBuilder(SQL_PREFETCH_PART1)
-                .bind("pk").to("169 " + customerId + " 0 ")
-                .bind("valid_from").to(System.currentTimeMillis())
-                .build();
-
-        ResultSet resultSet = client.singleUse()
-                .executeQuery(statement);
-        final String mp = resultSet.next() ? resultSet.getString("mp") : null;
-        resultSet.close();
-
+        final String mp = execPrefetch(client);
 
         client.readWriteTransaction()
                 .run(new TransactionRunner.TransactionCallable<Void>() {
                     @Nullable
                     @Override
                     public Void run(TransactionContext transaction) throws Exception {
-                        Struct row = transaction.readRow("cao_ldm_00_ent", Key.of(mp),
-                                Arrays.asList("cc", "fu_01", "fu_02", "fu_03", "fu_04", "su_01", "su_02", "su_03", "su_04"));
-
-                        Thread.sleep(20);
-
+                        Struct row = readRow(transaction, mp);
+                        Thread.sleep(TIME_TO_SLEEP);
                         if (row != null) {
-                            long cc = row.getLong("cc");
-                            ByteArray fu_01 = row.isNull("fu_01") ? null : row.getBytes("fu_01");
-                            ByteArray fu_02 = row.isNull("fu_02") ? null : row.getBytes("fu_02");
-                            ByteArray fu_03 = row.isNull("fu_03") ? null : row.getBytes("fu_03");
-                            ByteArray fu_04 = row.isNull("fu_04") ? null : row.getBytes("fu_04");
-                            ByteArray su_01 = row.isNull("su_01") ? null : row.getBytes("su_01");
-                            ByteArray su_02 = row.isNull("su_02") ? null : row.getBytes("su_02");
-                            ByteArray su_03 = row.isNull("su_03") ? null : row.getBytes("su_03");
-                            ByteArray su_04 = row.isNull("su_04") ? null : row.getBytes("su_04");
-
-                            transaction.buffer(Mutation.newUpdateBuilder("cao_ldm_00_ent")
-                                    .set("mp").to(mp)
-                                    .set("cc").to(cc)
-                                    .set("fu_01").to(fu_01)
-                                    .set("fu_02").to(fu_02)
-                                    .set("fu_03").to(fu_03)
-                                    .set("fu_04").to(fu_04)
-                                    .set("su_01").to(su_01)
-                                    .set("su_02").to(su_02)
-                                    .set("su_03").to(su_03)
-                                    .set("su_04").to(su_04)
-                                    .build()
-                            );
+                            transaction.buffer(getMutation(SubscriberData.from(row), mp));
                         }
                         return null;
                     }
@@ -145,19 +96,6 @@ public class BenchmarkSpanner {
 
     @Benchmark
     public void blindWrite(SpannerConnection connection) {
-        long customerId = getRandomCustomer();
-        String mp = "30 " + customerId + " ";
-
-        Mutation mutation = Mutation.newUpdateBuilder("cao_ldm_00_ent")
-                .set("mp").to(mp)
-                .set("cc").to(0)
-                .build();
-
-        connection.getClient().write(Collections.singletonList(mutation));
-    }
-
-
-    private long getRandomCustomer() {
-        return PREFIX + (long) (RECORDS * Math.random());
+        connection.getClient().write(ImmutableList.of(getRandomMutation()));
     }
 }

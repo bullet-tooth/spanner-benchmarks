@@ -1,39 +1,38 @@
 package com.example;
 
-import com.google.cloud.grpc.*;
+import com.google.cloud.grpc.GrpcTransportOptions;
 import com.google.cloud.spanner.*;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 
-
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 @State(Scope.Benchmark)
 public class SpannerConnection {
-    private DatabaseId db;
     private DatabaseClient dbClient;
     private Spanner spanner;
+    private volatile boolean connectionClosed;
 
     private static class SpannerExecutorFactory implements
-      GrpcTransportOptions.ExecutorFactory<ScheduledExecutorService> {
-      ScheduledThreadPoolExecutor service;
+            GrpcTransportOptions.ExecutorFactory<ScheduledExecutorService> {
+        ScheduledThreadPoolExecutor service;
 
-      SpannerExecutorFactory(int numThreads) {
-        service = new ScheduledThreadPoolExecutor(numThreads);
-      }
+        SpannerExecutorFactory(int numThreads) {
+            service = new ScheduledThreadPoolExecutor(numThreads);
+        }
 
-      @Override
-      public ScheduledExecutorService get() {
-        return service;
-      }
+        @Override
+        public ScheduledExecutorService get() {
+            return service;
+        }
 
-      @Override
-      public void release(ScheduledExecutorService service) {
-        service.shutdown();
-      }
+        @Override
+        public void release(ScheduledExecutorService service) {
+            service.shutdown();
+        }
     }
 
     @Setup
@@ -50,11 +49,11 @@ public class SpannerConnection {
                                 .build())
                 .setNumChannels(config.channelsNum())
                 .setTransportOptions(GrpcTransportOptions.newBuilder()
-                  .setExecutorFactory(new SpannerExecutorFactory(config.clientThreadsNum()))
-                  .build())
+                        .setExecutorFactory(new SpannerExecutorFactory(config.clientThreadsNum()))
+                        .build())
                 .build();
         spanner = options.getService();
-        db = DatabaseId.of(options.getProjectId(), config.getInstance(), config.getDatabase());
+        DatabaseId db = DatabaseId.of(options.getProjectId(), config.getInstance(), config.getDatabase());
 
         String clientProject = spanner.getOptions().getProjectId();
         if (!db.getInstanceId().getProject().equals(clientProject)) {
@@ -80,12 +79,11 @@ public class SpannerConnection {
 
 
     @TearDown
-    public void closeConnection() {
-        try {
+    public synchronized void closeConnection() {
+        if (!connectionClosed) {
             spanner.close();
             System.out.println("Spanner connection closed");
-        } catch (IllegalStateException e) {
-
         }
+        connectionClosed = true;
     }
 }
