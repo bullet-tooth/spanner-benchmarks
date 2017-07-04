@@ -21,7 +21,7 @@ public class SubscriberData {
     private final Long cc;
     private final Map<String, ByteArray> data = new HashMap<>();
 
-     SubscriberData(Long cc) {
+    SubscriberData(Long cc) {
         this.cc = cc;
     }
 
@@ -47,7 +47,7 @@ public class SubscriberData {
     }
 
     public static String getRandomMp() {
-         return "30 " + getRandomCustomer() + " ";
+        return "30 " + getRandomCustomer() + " ";
     }
 
     private static ByteArray getBytes(Struct row, String column) {

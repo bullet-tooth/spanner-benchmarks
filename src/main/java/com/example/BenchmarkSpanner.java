@@ -123,7 +123,6 @@ public class BenchmarkSpanner {
                     @Override
                     public Void run(TransactionContext transaction) throws Exception {
                         Struct row = readRow(transaction, mp);
-                        Thread.sleep(TIME_TO_SLEEP);
                         if (row != null) {
                             transaction.buffer(getMutation(SubscriberData.from(row), mp));
                         }
