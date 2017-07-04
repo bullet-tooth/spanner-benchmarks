@@ -95,7 +95,21 @@ public class BenchmarkSpanner {
 
 
     @Benchmark
-    public void blindWrite(SpannerConnection connection) {
+    public void blindUpdate(SpannerConnection connection) {
         connection.getClient().write(ImmutableList.of(getRandomMutation()));
     }
+
+    @Benchmark
+    public void rwtUpdate(SpannerConnection connection) {
+        connection.getClient().readWriteTransaction()
+                .run(new TransactionRunner.TransactionCallable<Void>() {
+                    @Nullable
+                    @Override
+                    public Void run(TransactionContext transaction) throws Exception {
+                        transaction.buffer(getRandomMutation());
+                        return null;
+                    }
+                });
+    }
+
 }
