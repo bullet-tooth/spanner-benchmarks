@@ -43,6 +43,7 @@ public class SpannerConnection {
                 .setSessionPoolOption(
                         SessionPoolOptions.newBuilder()
                                 .setFailIfPoolExhausted()
+                                .setMaxSessions(config.maxSessions())
                                 .setMinSessions(config.minSessions())
                                 .setWriteSessionsFraction(config.writeSessionFraction())
                                 .build())

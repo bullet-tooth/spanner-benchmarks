@@ -29,26 +29,38 @@ public class SpannerConfig {
 
 
     public String getDatabase() {
-        return properties.getProperty("spanner.database");
+        return getStringProperty("spanner.database");
     }
 
     public String getInstance() {
-        return properties.getProperty("spanner.instance");
+        return getStringProperty("spanner.instance");
     }
 
     public int minSessions() {
-        return Integer.parseInt(System.getProperty("spanner.sessions.min", "100"));
+        return Integer.parseInt(getStringProperty("spanner.sessions.min"));
+    }
+    public int maxSessions() {
+        return Integer.parseInt(getStringProperty("spanner.sessions.max"));
     }
 
     public int channelsNum() {
-        return Integer.parseInt(System.getProperty("spanner.channels.num", "16"));
+        return Integer.parseInt(getStringProperty("spanner.channels.num"));
     }
 
     public float writeSessionFraction() {
-        return Float.parseFloat(System.getProperty("spanner.sessions.write.fraction", "0f"));
+        return Float.parseFloat(getStringProperty("spanner.sessions.write.fraction"));
     }
 
     public int clientThreadsNum() {
-        return Integer.parseInt(System.getProperty("spanner.clientthreads.num", "100"));
+        return Integer.parseInt(getStringProperty("spanner.clientthreads.num"));
     }
+
+    private String getStringProperty(String name) {
+        return System.getProperty(name) != null ? System.getProperty(name) : properties.getProperty(name);
+    }
+
+    public int customersCount() {
+        return Integer.parseInt(getStringProperty("spanner.customers.count"));
+    }
+
 }

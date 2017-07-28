@@ -16,7 +16,7 @@ public class SubscriberData {
     public static final List<String> COLUMNS_CONTAINERS = Arrays.asList("fu_01", "fu_02", "fu_03", "fu_04", "su_01", "su_02", "su_03", "su_04");
     public static final String SQL_PREFETCH_PART1 =
             "SELECT mp FROM cao_ldm_00_acc WHERE pk=@pk AND valid_from<=@valid_from ORDER BY valid_from DESC";
-    public static final long RECORDS = 99999900L;
+    public static final long RECORDS = SpannerConfig.getConfig().customersCount();
     public static final long PREFIX = 491733000000L;
     private final Long cc;
     private final Map<String, ByteArray> data = new HashMap<>();
